@@ -11,6 +11,7 @@ using Azure.Core;
 using Azure.Core.Pipeline;
 using MDev.Dotnet.SemanticKernel.Connectors.AzureAIStudio.Phi3.AzureCore;
 using System.Net.Http;
+using MDev.Dotnet.SemanticKernel.Connectors.AzureAIStudio.Phi3.ChatCompletion;
 
 namespace MDev.Dotnet.SemanticKernel.Connectors.AzureAIStudio.Phi3;
 
@@ -44,15 +45,15 @@ internal class AzureAIStudioMaaSPhi3ChatCompletionService : IChatCompletionServi
     }
 
     internal AzureAIStudioMaaSPhi3ChatCompletionService(Uri endpoint, 
-                                                        AzureKeyCredential keyCredential, 
-                                                        OpenAIClientOptions options,
+                                                        AzureKeyCredential keyCredential,
+                                                        Phi3ClientOptions options,
                                                         HttpClient httpClient = null,
                                                         ILogger? logger = null)
     {
         this.endpoint = endpoint;
         if (options == null)
         {
-            options = new OpenAIClientOptions();
+            options = new Phi3ClientOptions();
         }
 
         if (httpClient is not null)
@@ -70,15 +71,15 @@ internal class AzureAIStudioMaaSPhi3ChatCompletionService : IChatCompletionServi
     }
 
     internal AzureAIStudioMaaSPhi3ChatCompletionService(Uri endpoint, 
-                                                        TokenCredential tokenCredential, 
-                                                        OpenAIClientOptions options,
+                                                        TokenCredential tokenCredential,
+                                                        Phi3ClientOptions options,
                                                         HttpClient httpClient = null,
                                                         ILogger? logger = null)
     {
         this.endpoint = endpoint;
         if (options == null)
         {
-            options = new OpenAIClientOptions();
+            options = new Phi3ClientOptions();
         }
 
         if (httpClient is not null)

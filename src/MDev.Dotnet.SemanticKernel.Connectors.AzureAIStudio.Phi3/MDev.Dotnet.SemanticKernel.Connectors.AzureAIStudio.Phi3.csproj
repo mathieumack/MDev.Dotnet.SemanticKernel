@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
 	  <Authors>MACK Mathieu</Authors>
 	  <Company>MACK Mathieu</Company>
-	  <Description>Connector for Azure AI Studio MaaS model : hi3</Description>
+	  <Description>Connector for Azure AI Studio MaaS model : phi3</Description>
 	  <PackageTags>ioc</PackageTags>
 	  <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
 	  <ProjectGuid>{3ff80538-77f7-55cc-dd14-72785201b220}</ProjectGuid>
