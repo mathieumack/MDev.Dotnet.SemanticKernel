@@ -23,16 +23,12 @@ internal class AzureAIStudioMaaSPhi3ChatCompletionService : IChatCompletionServi
     /// </summary>
     internal ILogger Logger { get; set; }
 
-    private readonly AzureKeyCredential _keyCredential;
-    private readonly TokenCredential _tokenCredential;
     private readonly HttpPipeline _pipeline;
     private readonly Uri endpoint;
-    private readonly HttpClient httpClient;
-    private readonly OpenAIClientOptions options;
 
     private static RequestContext DefaultRequestContext = new RequestContext();
     private static ResponseClassifier _responseClassifier200;
-    //private readonly HttpClient httpClient;
+
     private static ResponseClassifier ResponseClassifier200
     {
         get
@@ -54,24 +50,21 @@ internal class AzureAIStudioMaaSPhi3ChatCompletionService : IChatCompletionServi
                                                         ILogger? logger = null)
     {
         this.endpoint = endpoint;
-        this.httpClient = httpClient;
-        this.options = options;
         if (options == null)
         {
-            this.options = new OpenAIClientOptions();
+            options = new OpenAIClientOptions();
         }
 
         if (httpClient is not null)
         {
-            this.options.Transport = new HttpClientTransport(httpClient);
-            this.options.RetryPolicy = new RetryPolicy(maxRetries: 0); // Disable Azure SDK retry policy if and only if a custom HttpClient is provided.
-            this.options.Retry.NetworkTimeout = Timeout.InfiniteTimeSpan; // Disable Azure SDK default timeout
+            options.Transport = new HttpClientTransport(httpClient);
+            options.RetryPolicy = new RetryPolicy(maxRetries: 0); // Disable Azure SDK retry policy if and only if a custom HttpClient is provided.
+            options.Retry.NetworkTimeout = Timeout.InfiniteTimeSpan; // Disable Azure SDK default timeout
         }
 
-        _keyCredential = keyCredential;
-        _pipeline = HttpPipelineBuilder.Build(this.options, Array.Empty<HttpPipelinePolicy>(), new HttpPipelinePolicy[1]
+        _pipeline = HttpPipelineBuilder.Build(options, Array.Empty<HttpPipelinePolicy>(), new HttpPipelinePolicy[1]
         {
-            new MDEVAzureKeyCredentialPolicy(_keyCredential, "api-key")
+            new MDEVAzureKeyCredentialPolicy(keyCredential, "api-key")
         }, new ResponseClassifier());
         this.Logger = logger ?? NullLogger.Instance;
     }
@@ -83,24 +76,21 @@ internal class AzureAIStudioMaaSPhi3ChatCompletionService : IChatCompletionServi
                                                         ILogger? logger = null)
     {
         this.endpoint = endpoint;
-        this.httpClient = httpClient;
-        this.options = options;
         if (options == null)
         {
-            this.options = new OpenAIClientOptions();
+            options = new OpenAIClientOptions();
         }
 
         if (httpClient is not null)
         {
-            this.options.Transport = new HttpClientTransport(httpClient);
-            this.options.RetryPolicy = new RetryPolicy(maxRetries: 0); // Disable Azure SDK retry policy if and only if a custom HttpClient is provided.
-            this.options.Retry.NetworkTimeout = Timeout.InfiniteTimeSpan; // Disable Azure SDK default timeout
+            options.Transport = new HttpClientTransport(httpClient);
+            options.RetryPolicy = new RetryPolicy(maxRetries: 0); // Disable Azure SDK retry policy if and only if a custom HttpClient is provided.
+            options.Retry.NetworkTimeout = Timeout.InfiniteTimeSpan; // Disable Azure SDK default timeout
         }
 
-        _tokenCredential = tokenCredential;
-        _pipeline = HttpPipelineBuilder.Build(this.options, Array.Empty<HttpPipelinePolicy>(), new HttpPipelinePolicy[1]
+        _pipeline = HttpPipelineBuilder.Build(options, Array.Empty<HttpPipelinePolicy>(), new HttpPipelinePolicy[1]
         {
-            new BearerTokenAuthenticationPolicy(_tokenCredential, AuthorizationScopes)
+            new BearerTokenAuthenticationPolicy(tokenCredential, AuthorizationScopes)
         }, new ResponseClassifier());
         this.Logger = logger ?? NullLogger.Instance;
     }
@@ -194,18 +184,6 @@ internal class AzureAIStudioMaaSPhi3ChatCompletionService : IChatCompletionServi
         s_completionTokensCounter.Add(usage.CompletionTokens);
         s_totalTokensCounter.Add(usage.TotalTokens);
     }
-
-    //private static async Task<T> RunRequestAsync<T>(Func<Task<T>> request)
-    //{
-    //    try
-    //    {
-    //        return await request.Invoke().ConfigureAwait(false);
-    //    }
-    //    catch (RequestFailedException e)
-    //    {
-    //        throw e.ToHttpOperationException();
-    //    }
-    //}
 
     public IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
     {

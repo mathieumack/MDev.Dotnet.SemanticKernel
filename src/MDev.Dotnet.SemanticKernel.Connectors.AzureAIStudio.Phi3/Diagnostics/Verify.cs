@@ -9,8 +9,8 @@ namespace MDev.Dotnet.SemanticKernel.Connectors.AzureAIStudio.Phi3.Diagnostics;
 [ExcludeFromCodeCoverage]
 internal static class Verify
 {
-    private static readonly Regex s_asciiLettersDigitsUnderscoresRegex = new("^[0-9A-Za-z_]*$");
-    private static readonly Regex s_filenameRegex = new("^[^.]+\\.[^.]+$");
+    private static readonly Regex s_asciiLettersDigitsUnderscoresRegex = new("^[0-9A-Za-z_]*$", RegexOptions.None, TimeSpan.FromMilliseconds(500));
+    private static readonly Regex s_filenameRegex = new("^[^.]+\\.[^.]+$", RegexOptions.None, TimeSpan.FromMilliseconds(500));
 
     /// <summary>
     /// Equivalent of ArgumentNullException.ThrowIfNull

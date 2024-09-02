@@ -44,7 +44,7 @@ public static class AIStudioMaaSPhi3ServiceCollectionExtensions
             var client = new AzureAIStudioMaaSPhi3ChatCompletionService(new Uri(endpoint), 
                                                                         new Azure.AzureKeyCredential(apiKey),
                                                                         new(),
-                                                                        null,
+                                                                        httpClient,
                                                                         logger);
             return client;
         };
