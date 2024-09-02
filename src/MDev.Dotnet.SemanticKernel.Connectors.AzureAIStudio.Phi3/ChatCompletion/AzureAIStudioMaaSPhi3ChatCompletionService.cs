@@ -11,21 +11,29 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.Extensions.Logging.Abstractions;
+using Azure.Identity;
 
 namespace MDev.Dotnet.SemanticKernel.Connectors.AzureAIStudio.Phi3;
 
 internal class AzureAIStudioMaaSPhi3ChatCompletionService : IChatCompletionService
 {
+    private static readonly string[] AuthorizationScopes = new string[1] { "https://cognitiveservices.azure.com/.default" };
+
     /// <summary>
     /// Logger instance
     /// </summary>
     internal ILogger Logger { get; set; }
 
+    private readonly DefaultAzureCredential credentials;
+
     private readonly HttpClient httpClient;
 
-    internal AzureAIStudioMaaSPhi3ChatCompletionService(HttpClient httpClient, ILogger? logger = null)
+    internal AzureAIStudioMaaSPhi3ChatCompletionService(HttpClient httpClient,
+                                                        DefaultAzureCredential credentials = null,
+                                                        ILogger? logger = null)
     {
         this.httpClient = httpClient;
+        this.credentials = credentials;
         this.Logger = logger ?? NullLogger.Instance;
     }
 
@@ -93,6 +101,13 @@ internal class AzureAIStudioMaaSPhi3ChatCompletionService : IChatCompletionServi
         var content = new StringContent(requestBody);
         content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
+        // authorization:
+        if (credentials != null)
+        {
+            var token = await credentials.GetTokenAsync(new Azure.Core.TokenRequestContext(AuthorizationScopes));
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token.Token);
+        }
+
         for (int iteration = 1; ; iteration++)
         {
             // Make the request.
@@ -104,23 +119,13 @@ internal class AzureAIStudioMaaSPhi3ChatCompletionService : IChatCompletionServi
             {
                 responseContent = await response.Content.ReadFromJsonAsync<ChatWithDataResponse>();
             }
-            //else
-            //{
-            //    //Console.WriteLine(string.Format("The request failed with status code: {0}", response.StatusCode));
-
-            //    // Print the headers - they include the requert ID and the timestamp,
-            //    // which are useful for debugging the failure
-            //    //Console.WriteLine(response.Headers.ToString());
-
-            //    responseContent = await response.Content.ReadAsStringAsync();
-            //    //Console.WriteLine(responseContent);
-            //}
-            this.CaptureUsageDetails(responseContent.Usage);
 
             if (responseContent is null)
             {
                 throw new KernelException("Chat completions not found");
             }
+
+            this.CaptureUsageDetails(responseContent.Usage);
 
             // If we don't want to attempt to invoke any functions, just return the result.
             // Or if we are auto-invoking but we somehow end up with other than 1 choice even though only 1 was requested, similarly bail.
