@@ -4,14 +4,13 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using System.Text.Json;
 using MDev.Dotnet.SemanticKernel.Connectors.AzureAIStudio.Phi3.ChatCompletionWithData;
 using Azure;
-using MDev.Dotnet.SemanticKernel.Connectors.AzureAIStudio.Phi3.Exceptions;
 using Azure.AI.OpenAI;
 using System.Diagnostics.Metrics;
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.Extensions.Logging.Abstractions;
-using Azure.Identity;
+using Azure.Core;
+using Azure.Core.Pipeline;
+using MDev.Dotnet.SemanticKernel.Connectors.AzureAIStudio.Phi3.AzureCore;
+using System.Net.Http;
 
 namespace MDev.Dotnet.SemanticKernel.Connectors.AzureAIStudio.Phi3;
 
@@ -24,16 +23,85 @@ internal class AzureAIStudioMaaSPhi3ChatCompletionService : IChatCompletionServi
     /// </summary>
     internal ILogger Logger { get; set; }
 
-    private readonly DefaultAzureCredential credentials;
-
+    private readonly AzureKeyCredential _keyCredential;
+    private readonly TokenCredential _tokenCredential;
+    private readonly HttpPipeline _pipeline;
+    private readonly Uri endpoint;
     private readonly HttpClient httpClient;
+    private readonly OpenAIClientOptions options;
 
-    internal AzureAIStudioMaaSPhi3ChatCompletionService(HttpClient httpClient,
-                                                        DefaultAzureCredential credentials = null,
+    private static RequestContext DefaultRequestContext = new RequestContext();
+    private static ResponseClassifier _responseClassifier200;
+    //private readonly HttpClient httpClient;
+    private static ResponseClassifier ResponseClassifier200
+    {
+        get
+        {
+            ResponseClassifier responseClassifier = _responseClassifier200;
+            if (responseClassifier == null)
+            {
+                responseClassifier = (_responseClassifier200 = new StatusCodeClassifier(stackalloc ushort[1] { 200 }));
+            }
+
+            return responseClassifier;
+        }
+    }
+
+    internal AzureAIStudioMaaSPhi3ChatCompletionService(Uri endpoint, 
+                                                        AzureKeyCredential keyCredential, 
+                                                        OpenAIClientOptions options,
+                                                        HttpClient httpClient = null,
                                                         ILogger? logger = null)
     {
+        this.endpoint = endpoint;
         this.httpClient = httpClient;
-        this.credentials = credentials;
+        this.options = options;
+        if (options == null)
+        {
+            this.options = new OpenAIClientOptions();
+        }
+
+        if (httpClient is not null)
+        {
+            this.options.Transport = new HttpClientTransport(httpClient);
+            this.options.RetryPolicy = new RetryPolicy(maxRetries: 0); // Disable Azure SDK retry policy if and only if a custom HttpClient is provided.
+            this.options.Retry.NetworkTimeout = Timeout.InfiniteTimeSpan; // Disable Azure SDK default timeout
+        }
+
+        _keyCredential = keyCredential;
+        _pipeline = HttpPipelineBuilder.Build(this.options, Array.Empty<HttpPipelinePolicy>(), new HttpPipelinePolicy[1]
+        {
+            new MDEVAzureKeyCredentialPolicy(_keyCredential, "api-key")
+        }, new ResponseClassifier());
+        this.Logger = logger ?? NullLogger.Instance;
+    }
+
+    internal AzureAIStudioMaaSPhi3ChatCompletionService(Uri endpoint, 
+                                                        TokenCredential tokenCredential, 
+                                                        OpenAIClientOptions options,
+                                                        HttpClient httpClient = null,
+                                                        ILogger? logger = null)
+    {
+        this.endpoint = endpoint;
+        this.httpClient = httpClient;
+        this.options = options;
+        if (options == null)
+        {
+            this.options = new OpenAIClientOptions();
+        }
+
+        if (httpClient is not null)
+        {
+            this.options.Transport = new HttpClientTransport(httpClient);
+            this.options.RetryPolicy = new RetryPolicy(maxRetries: 0); // Disable Azure SDK retry policy if and only if a custom HttpClient is provided.
+            this.options.Retry.NetworkTimeout = Timeout.InfiniteTimeSpan; // Disable Azure SDK default timeout
+        }
+
+        _tokenCredential = tokenCredential;
+        _pipeline = HttpPipelineBuilder.Build(this.options, Array.Empty<HttpPipelinePolicy>(), new HttpPipelinePolicy[1]
+        {
+            new BearerTokenAuthenticationPolicy(_tokenCredential, AuthorizationScopes)
+        }, new ResponseClassifier());
         this.Logger = logger ?? NullLogger.Instance;
     }
 
@@ -166,43 +234,87 @@ internal class AzureAIStudioMaaSPhi3ChatCompletionService : IChatCompletionServi
             }).ToList()
         };
 
-        var uri = "v1/chat/completions";
+        var requestContent = RequestContent.Create(body);
 
-        var requestBody = JsonSerializer.Serialize(body);
-
-        var content = new StringContent(requestBody);
-        content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-
-        // authorization:
-        if (credentials != null)
+        RequestContext requestContext = FromCancellationToken(cancellationToken);
+        try
         {
-            var token = await credentials.GetTokenAsync(new Azure.Core.TokenRequestContext(AuthorizationScopes));
-            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token.Token);
-        }
+            using HttpMessage message = CreatePostRequestMessage("chat/completions", requestContent, requestContext);
+            var response = ProcessMessage(_pipeline, message, requestContext);
 
-        for (int iteration = 1; ; iteration++)
-        {
-            // Make the request.
-            HttpResponseMessage response = await httpClient.PostAsync(uri, content);
-
-            ChatWithDataResponse responseContent = null;
-
-            if (response.IsSuccessStatusCode)
-            {
-                responseContent = await response.Content.ReadFromJsonAsync<ChatWithDataResponse>();
-            }
-
-            if (responseContent is null)
-            {
-                throw new KernelException("Chat completions not found");
-            }
-
+            using JsonDocument jsonDocument = JsonDocument.Parse(response.Content);
+            var responseContent = System.Text.Json.JsonSerializer.Deserialize<ChatWithDataResponse>(jsonDocument);
             this.CaptureUsageDetails(responseContent.Usage);
-
-            // If we don't want to attempt to invoke any functions, just return the result.
-            // Or if we are auto-invoking but we somehow end up with other than 1 choice even though only 1 was requested, similarly bail.
             return responseContent.Choices.Select(e =>
                     ToChatMessageContent(responseContent, e)).ToList();
         }
+        catch (Exception exception)
+        {
+            throw;
+        }
+    }
+
+    public Response ProcessMessage(HttpPipeline pipeline, HttpMessage message, RequestContext? requestContext, CancellationToken cancellationToken = default(CancellationToken))
+    {
+        var (cancellationToken2, errorOptions) = ApplyRequestContext(requestContext);
+        if (!cancellationToken2.CanBeCanceled || !cancellationToken.CanBeCanceled)
+        {
+            pipeline.Send(message, cancellationToken.CanBeCanceled ? cancellationToken : cancellationToken2);
+        }
+        else
+        {
+            using CancellationTokenSource cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken2, cancellationToken);
+            pipeline.Send(message, cancellationTokenSource.Token);
+        }
+
+        if (!message.Response.IsError || errorOptions == ErrorOptions.NoThrow)
+        {
+            return message.Response;
+        }
+
+        throw new RequestFailedException(message.Response);
+    }
+
+    private (CancellationToken CancellationToken, ErrorOptions ErrorOptions) ApplyRequestContext(RequestContext? requestContext)
+    {
+        if (requestContext == null)
+        {
+            return (CancellationToken.None, ErrorOptions.Default);
+        }
+
+        return (requestContext.CancellationToken, requestContext.ErrorOptions);
+    }
+
+    internal RequestContext FromCancellationToken(CancellationToken cancellationToken = default(CancellationToken))
+    {
+        if (!cancellationToken.CanBeCanceled)
+        {
+            return DefaultRequestContext;
+        }
+
+        return new RequestContext
+        {
+            CancellationToken = cancellationToken
+        };
+    }
+
+    internal RequestUriBuilder GetUri(string operationPath)
+    {
+        var builder = new RequestUriBuilder();
+        builder.Reset(endpoint);
+        builder.AppendPath("/" + operationPath, escape: false);
+        return builder;
+    }
+
+    internal HttpMessage CreatePostRequestMessage(string operationPath, RequestContent content, RequestContext context)
+    {
+        HttpMessage httpMessage = _pipeline.CreateMessage(context, ResponseClassifier200);
+        Request request = httpMessage.Request;
+        request.Method = RequestMethod.Post;
+        request.Uri = GetUri(operationPath);
+        request.Headers.Add("Accept", "application/json");
+        request.Headers.Add("Content-Type", "application/json");
+        request.Content = content;
+        return httpMessage;
     }
 }

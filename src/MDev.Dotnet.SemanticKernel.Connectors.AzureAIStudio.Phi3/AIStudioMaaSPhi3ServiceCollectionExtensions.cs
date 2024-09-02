@@ -5,6 +5,7 @@ using MDev.Dotnet.SemanticKernel.Connectors.AzureAIStudio.Phi3.Diagnostics;
 using System.Net.Http.Headers;
 using Microsoft.Extensions.Logging;
 using Azure.Identity;
+using Microsoft.Extensions.Http.Logging;
 
 namespace MDev.Dotnet.SemanticKernel.Connectors.AzureAIStudio.Phi3;
 
@@ -30,12 +31,7 @@ public static class AIStudioMaaSPhi3ServiceCollectionExtensions
 
         var deploymentIdenfifier = Guid.NewGuid().ToString();
 
-        builder.Services.AddHttpClient($"http--{deploymentIdenfifier}")
-            .ConfigureHttpClient((services, client) =>
-            {
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
-                client.BaseAddress = new Uri(endpoint);
-            });
+        builder.Services.AddHttpClient($"http--{deploymentIdenfifier}");
 
         Func<IServiceProvider, object?, AzureAIStudioMaaSPhi3ChatCompletionService> factory = (serviceProvider, _) =>
         {
@@ -45,7 +41,11 @@ public static class AIStudioMaaSPhi3ServiceCollectionExtensions
             var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
             var logger = loggerFactory?.CreateLogger(typeof(AzureAIStudioMaaSPhi3ChatCompletionService));
 
-            var client = new AzureAIStudioMaaSPhi3ChatCompletionService(httpClient, null, logger);
+            var client = new AzureAIStudioMaaSPhi3ChatCompletionService(new Uri(endpoint), 
+                                                                        new Azure.AzureKeyCredential(apiKey),
+                                                                        new(),
+                                                                        null,
+                                                                        logger);
             return client;
         };
 
@@ -82,7 +82,11 @@ public static class AIStudioMaaSPhi3ServiceCollectionExtensions
             var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
             var logger = loggerFactory?.CreateLogger(typeof(AzureAIStudioMaaSPhi3ChatCompletionService));
 
-            var client = new AzureAIStudioMaaSPhi3ChatCompletionService(httpClient, null, logger);
+            var client = new AzureAIStudioMaaSPhi3ChatCompletionService(new Uri(endpoint),
+                                                                        new Azure.AzureKeyCredential(apiKey),
+                                                                        new(),
+                                                                        httpClient,
+                                                                        logger);
             return client;
         };
 
@@ -118,7 +122,11 @@ public static class AIStudioMaaSPhi3ServiceCollectionExtensions
             var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
             var logger = loggerFactory?.CreateLogger(typeof(AzureAIStudioMaaSPhi3ChatCompletionService));
 
-            var client = new AzureAIStudioMaaSPhi3ChatCompletionService(httpClient, credentials, logger);
+            var client = new AzureAIStudioMaaSPhi3ChatCompletionService(new Uri(endpoint),
+                                                                        credentials,
+                                                                        new(),
+                                                                        httpClient, 
+                                                                        logger);
             return client;
         };
 
