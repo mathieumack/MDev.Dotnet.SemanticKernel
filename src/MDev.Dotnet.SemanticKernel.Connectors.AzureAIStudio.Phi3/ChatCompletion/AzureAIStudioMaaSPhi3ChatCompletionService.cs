@@ -71,69 +71,6 @@ internal class AzureAIStudioMaaSPhi3ChatCompletionService : IChatCompletionServi
 
     public IReadOnlyDictionary<string, object?> Attributes => throw new NotImplementedException();
 
-    public async Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-    {
-        if (chatHistory is null)
-            throw new ArgumentNullException(nameof(chatHistory));
-
-        // Convert the incoming execution settings to OpenAI settings.
-        var chatExecutionSettings = Phi3PromptExecutionSettings.FromExecutionSettings(executionSettings);
-        bool autoInvoke = false;
-        ValidateMaxTokens(chatExecutionSettings.MaxTokens);
-
-        // Create the Azure SDK ChatCompletionOptions instance from all available information.
-        var body = new ChatWithDataRequest()
-        {
-            MaxTokens = chatExecutionSettings.MaxTokens,
-            Temperature = chatExecutionSettings.Temperature,
-            TopP = chatExecutionSettings.TopP,
-            Messages = chatHistory.Select(e => new ChatWithDataMessage()
-            {
-                Role = e.Role.ToString(),
-                Content = e.Content.ToString()
-            }).ToList()
-        };
-
-        var uri = "v1/chat/completions";
-
-        var requestBody = JsonSerializer.Serialize(body);
-
-        var content = new StringContent(requestBody);
-        content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-
-        // authorization:
-        if (credentials != null)
-        {
-            var token = await credentials.GetTokenAsync(new Azure.Core.TokenRequestContext(AuthorizationScopes));
-            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token.Token);
-        }
-
-        for (int iteration = 1; ; iteration++)
-        {
-            // Make the request.
-            HttpResponseMessage response = await httpClient.PostAsync(uri, content);
-
-            ChatWithDataResponse responseContent = null;
-
-            if (response.IsSuccessStatusCode)
-            {
-                responseContent = await response.Content.ReadFromJsonAsync<ChatWithDataResponse>();
-            }
-
-            if (responseContent is null)
-            {
-                throw new KernelException("Chat completions not found");
-            }
-
-            this.CaptureUsageDetails(responseContent.Usage);
-
-            // If we don't want to attempt to invoke any functions, just return the result.
-            // Or if we are auto-invoking but we somehow end up with other than 1 choice even though only 1 was requested, similarly bail.
-            return responseContent.Choices.Select(e =>
-                    ToChatMessageContent(responseContent, e)).ToList();
-        }
-    }
-
     private ChatMessageContent ToChatMessageContent(ChatWithDataResponse chatWithDataResponse, ChatWithDataChoice chatWithDataChoice)
     {
         var metadatas = new Dictionary<string, object>();
@@ -205,5 +142,67 @@ internal class AzureAIStudioMaaSPhi3ChatCompletionService : IChatCompletionServi
     public IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
+    }
+
+    public async Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    {
+        if (chatHistory is null)
+            throw new ArgumentNullException(nameof(chatHistory));
+
+        // Convert the incoming execution settings to OpenAI settings.
+        var chatExecutionSettings = Phi3PromptExecutionSettings.FromExecutionSettings(executionSettings);
+        ValidateMaxTokens(chatExecutionSettings.MaxTokens);
+
+        // Create the Azure SDK ChatCompletionOptions instance from all available information.
+        var body = new ChatWithDataRequest()
+        {
+            MaxTokens = chatExecutionSettings.MaxTokens,
+            Temperature = chatExecutionSettings.Temperature,
+            TopP = chatExecutionSettings.TopP,
+            Messages = chatHistory.Select(e => new ChatWithDataMessage()
+            {
+                Role = e.Role.ToString(),
+                Content = e.Content.ToString()
+            }).ToList()
+        };
+
+        var uri = "v1/chat/completions";
+
+        var requestBody = JsonSerializer.Serialize(body);
+
+        var content = new StringContent(requestBody);
+        content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+        // authorization:
+        if (credentials != null)
+        {
+            var token = await credentials.GetTokenAsync(new Azure.Core.TokenRequestContext(AuthorizationScopes));
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token.Token);
+        }
+
+        for (int iteration = 1; ; iteration++)
+        {
+            // Make the request.
+            HttpResponseMessage response = await httpClient.PostAsync(uri, content);
+
+            ChatWithDataResponse responseContent = null;
+
+            if (response.IsSuccessStatusCode)
+            {
+                responseContent = await response.Content.ReadFromJsonAsync<ChatWithDataResponse>();
+            }
+
+            if (responseContent is null)
+            {
+                throw new KernelException("Chat completions not found");
+            }
+
+            this.CaptureUsageDetails(responseContent.Usage);
+
+            // If we don't want to attempt to invoke any functions, just return the result.
+            // Or if we are auto-invoking but we somehow end up with other than 1 choice even though only 1 was requested, similarly bail.
+            return responseContent.Choices.Select(e =>
+                    ToChatMessageContent(responseContent, e)).ToList();
+        }
     }
 }

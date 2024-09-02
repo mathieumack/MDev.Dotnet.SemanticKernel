@@ -75,6 +75,7 @@ public static class AIStudioMaaSPhi3ServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(apiKey);
 
         httpClient.BaseAddress = new Uri(endpoint);
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
 
         Func<IServiceProvider, object?, AzureAIStudioMaaSPhi3ChatCompletionService> factory = (serviceProvider, _) =>
         {
