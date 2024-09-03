@@ -1,6 +1,9 @@
 ﻿using Azure.Core.Pipeline;
 using Azure.Core;
 using Azure;
+using System.Net.Http.Headers;
+using System.Net.Http;
+using System.Net;
 
 namespace MDev.Dotnet.SemanticKernel.Connectors.AzureAIStudio.Phi3.AzureCore
 {

@@ -65,7 +65,7 @@ internal class AzureAIStudioMaaSPhi3ChatCompletionService : IChatCompletionServi
 
         _pipeline = HttpPipelineBuilder.Build(options, Array.Empty<HttpPipelinePolicy>(), new HttpPipelinePolicy[1]
         {
-            new MDEVAzureKeyCredentialPolicy(keyCredential, "api-key")
+            new MDEVAzureKeyCredentialPolicy(keyCredential, "Authorization", "Bearer")
         }, new ResponseClassifier());
         this.Logger = logger ?? NullLogger.Instance;
     }
