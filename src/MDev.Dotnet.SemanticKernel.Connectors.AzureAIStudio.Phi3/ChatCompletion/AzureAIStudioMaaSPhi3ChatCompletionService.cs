@@ -4,13 +4,11 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using System.Text.Json;
 using MDev.Dotnet.SemanticKernel.Connectors.AzureAIStudio.Phi3.ChatCompletionWithData;
 using Azure;
-using Azure.AI.OpenAI;
 using System.Diagnostics.Metrics;
 using Microsoft.Extensions.Logging.Abstractions;
 using Azure.Core;
 using Azure.Core.Pipeline;
 using MDev.Dotnet.SemanticKernel.Connectors.AzureAIStudio.Phi3.AzureCore;
-using System.Net.Http;
 using MDev.Dotnet.SemanticKernel.Connectors.AzureAIStudio.Phi3.ChatCompletion;
 
 namespace MDev.Dotnet.SemanticKernel.Connectors.AzureAIStudio.Phi3;
@@ -191,7 +189,7 @@ internal class AzureAIStudioMaaSPhi3ChatCompletionService : IChatCompletionServi
         throw new NotImplementedException();
     }
 
-    public async Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
     {
         if (chatHistory is null)
             throw new ArgumentNullException(nameof(chatHistory));
@@ -224,8 +222,8 @@ internal class AzureAIStudioMaaSPhi3ChatCompletionService : IChatCompletionServi
             using JsonDocument jsonDocument = JsonDocument.Parse(response.Content);
             var responseContent = System.Text.Json.JsonSerializer.Deserialize<ChatWithDataResponse>(jsonDocument);
             this.CaptureUsageDetails(responseContent.Usage);
-            return responseContent.Choices.Select(e =>
-                    ToChatMessageContent(responseContent, e)).ToList();
+            var result = responseContent.Choices.Select(e => ToChatMessageContent(responseContent, e)).ToList();
+            return Task.FromResult(result as IReadOnlyList<ChatMessageContent>);
         }
         catch (Exception exception)
         {

@@ -5,10 +5,10 @@ namespace MDev.Dotnet.SemanticKernel.Connectors.AzureAIStudio.Phi3.ChatCompletio
 internal sealed class ChatWithDataRequest
 {
     [JsonPropertyName("temperature")]
-    public double Temperature { get; set; } = 0;
+    public double? Temperature { get; set; } = 0;
 
     [JsonPropertyName("top_p")]
-    public double TopP { get; set; } = 0;
+    public double? TopP { get; set; } = 0;
 
     //[JsonPropertyName("stream")]
     //public bool IsStreamEnabled { get; set; }
