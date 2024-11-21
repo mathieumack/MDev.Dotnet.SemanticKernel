@@ -6,6 +6,7 @@ using System.Net.Http.Headers;
 using Microsoft.Extensions.Logging;
 using Azure.Identity;
 using Microsoft.Extensions.Http.Logging;
+using System.Diagnostics.CodeAnalysis;
 
 namespace MDev.Dotnet.SemanticKernel.Connectors.AzureAIStudio.Gpt4o1;
 
@@ -19,6 +20,7 @@ public static class AIStudioMaaSGpt4o1ServiceCollectionExtensions
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    [Experimental("SKMDEVEXP0002")]
     public static IKernelBuilder AddAzureAIStudioGpt4o1ChatCompletion(
         this IKernelBuilder builder,
         string endpoint,
@@ -63,6 +65,7 @@ public static class AIStudioMaaSGpt4o1ServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    [Experimental("SKMDEVEXP0002")]
     public static IKernelBuilder AddAzureAIStudioGpt4o1ChatCompletion(
         this IKernelBuilder builder,
         string endpoint,
@@ -101,6 +104,7 @@ public static class AIStudioMaaSGpt4o1ServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    [Experimental("SKMDEVEXP0002")]
     public static IKernelBuilder AddAzureAIStudioGpt4o1ChatCompletion(
         this IKernelBuilder builder,
         string endpoint,
