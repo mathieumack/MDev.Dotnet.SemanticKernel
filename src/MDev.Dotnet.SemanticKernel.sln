@@ -7,6 +7,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Library", "Library", "{1C71
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MDev.Dotnet.SemanticKernel.Connectors.AzureAIStudio.Phi3", "MDev.Dotnet.SemanticKernel.Connectors.AzureAIStudio.Phi3\MDev.Dotnet.SemanticKernel.Connectors.AzureAIStudio.Phi3.csproj", "{3FF80538-77F7-55CC-DD14-72785201B220}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MDev.Dotnet.SemanticKernel.Connectors.AzureAIStudio.Gpt4o1", "MDev.Dotnet.SemanticKernel.Connectors.AzureAIStudio.Gpt4o1\MDev.Dotnet.SemanticKernel.Connectors.AzureAIStudio.Gpt4o1.csproj", "{74E4EEA5-57B8-40DB-860C-8833664B43CB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,12 +19,17 @@ Global
 		{3FF80538-77F7-55CC-DD14-72785201B220}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3FF80538-77F7-55CC-DD14-72785201B220}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3FF80538-77F7-55CC-DD14-72785201B220}.Release|Any CPU.Build.0 = Release|Any CPU
+		{74E4EEA5-57B8-40DB-860C-8833664B43CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{74E4EEA5-57B8-40DB-860C-8833664B43CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{74E4EEA5-57B8-40DB-860C-8833664B43CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{74E4EEA5-57B8-40DB-860C-8833664B43CB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{3FF80538-77F7-55CC-DD14-72785201B220} = {1C71F25C-D1B2-479A-8A64-51FAEBA6F439}
+		{74E4EEA5-57B8-40DB-860C-8833664B43CB} = {1C71F25C-D1B2-479A-8A64-51FAEBA6F439}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {58FEAF09-0F8E-4ED5-99DD-360DC2203259}
