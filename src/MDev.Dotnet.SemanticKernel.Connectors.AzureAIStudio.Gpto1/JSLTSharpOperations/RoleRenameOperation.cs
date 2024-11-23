@@ -1,7 +1,7 @@
 ﻿using JSLTSharp.JsonTransforms.Abstractions;
 using Newtonsoft.Json.Linq;
 
-namespace MDev.Dotnet.SemanticKernel.Connectors.AzureAIStudio.Gpt4o1.JSLTSharpOperations;
+namespace MDev.Dotnet.SemanticKernel.Connectors.AzureAIStudio.Gpto1.JSLTSharpOperations;
 
 internal class RoleRenameOperation : IJsonTransformCustomOperation
 {

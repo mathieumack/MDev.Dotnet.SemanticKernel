@@ -1,7 +1,7 @@
 ﻿using JSLTSharp;
 using System.Text;
 
-namespace MDev.Dotnet.SemanticKernel.Connectors.AzureAIStudio.Gpt4o1.HttpClientHandlers;
+namespace MDev.Dotnet.SemanticKernel.Connectors.AzureAIStudio.Gpto1.HttpClientHandlers;
 
 internal class AzureOpenAIHttpClientHandler : DelegatingHandler
 {

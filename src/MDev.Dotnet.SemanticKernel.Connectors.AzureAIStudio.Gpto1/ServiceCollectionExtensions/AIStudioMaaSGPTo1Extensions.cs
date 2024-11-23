@@ -2,10 +2,10 @@
 using JSLTSharp.JsonTransforms.Extensions;
 using JSLTSharp.JsonTransforms.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
-using MDev.Dotnet.SemanticKernel.Connectors.AzureAIStudio.Gpt4o1.JSLTSharpOperations;
-using MDev.Dotnet.SemanticKernel.Connectors.AzureAIStudio.Gpt4o1.HttpClientHandlers;
+using MDev.Dotnet.SemanticKernel.Connectors.AzureAIStudio.Gpto1.JSLTSharpOperations;
+using MDev.Dotnet.SemanticKernel.Connectors.AzureAIStudio.Gpto1.HttpClientHandlers;
 
-namespace MDev.Dotnet.SemanticKernel.Connectors.AzureAIStudio.Gpt4o1.ServiceCollectionExtensions;
+namespace MDev.Dotnet.SemanticKernel.Connectors.AzureAIStudio.Gpto1.ServiceCollectionExtensions;
 
 public static class AIStudioMaaSGPTo1Extensions
 {
