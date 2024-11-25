@@ -9,7 +9,7 @@
 		<Description>Connector for Azure AI Studio LLM model : gpt4 o1 and o1-mini</Description>
 		<PackageTags>ioc</PackageTags>
 		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-		<ProjectGuid>{3a4838fc-9b85-4334-8b28-14b0b38063df}</ProjectGuid>
+		<ProjectGuid>{989A4672-8A5D-48E8-878E-3249D46DFF64}</ProjectGuid>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<LangVersion>preview</LangVersion>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>

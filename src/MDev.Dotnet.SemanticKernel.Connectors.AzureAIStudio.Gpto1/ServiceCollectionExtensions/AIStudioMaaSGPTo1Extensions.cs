@@ -17,11 +17,10 @@ public static class AIStudioMaaSGPTo1Extensions
     /// <returns></returns>
     public static IServiceCollection RegisterAIStudioMaasGPTo1(this IServiceCollection services, string httpClientName)
     {
-        services.AddScoped<IJsonTransformCustomOperation, RoleRenameOperation>();
-        services.AddScoped<AzureOpenAIHttpClientHandler>();
-        services.AddScoped<JsonTransform>();
-        services.RegisterJsonCustomTransformFunctions();
-
+        services.AddSingleton<IJsonTransformCustomOperation, RoleRenameOperation>();
+        services.AddSingleton<AzureOpenAIHttpClientHandler>();
+        services.AddSingleton<JsonTransform>();
+        
         services.AddHttpClient(httpClientName)
             .ConfigureHttpClient((provider, client) =>
             {
