@@ -18,7 +18,7 @@ public static class AIStudioMaaSGPTo1Extensions
     public static IServiceCollection RegisterAIStudioMaasGPTo1(this IServiceCollection services, string httpClientName)
     {
         services.AddSingleton<IJsonTransformCustomOperation, RoleRenameOperation>();
-        services.AddSingleton<AzureOpenAIHttpClientHandler>();
+        services.AddScoped<AzureOpenAIHttpClientHandler>();
         services.AddSingleton<JsonTransform>();
         
         services.AddHttpClient(httpClientName)
