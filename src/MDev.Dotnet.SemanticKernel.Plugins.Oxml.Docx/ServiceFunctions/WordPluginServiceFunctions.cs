@@ -9,6 +9,7 @@ using DocumentFormat.OpenXml.Wordprocessing;
 using OpenXMLSDK.Engine.Word.Bookmarks;
 
 namespace MDev.Dotnet.SemanticKernel.Plugins.Oxml.Docx.ServiceFunctions;
+
 public class WordPluginServiceFunctions
 {
     private readonly ILogger<WordPluginServiceFunctions> logger;

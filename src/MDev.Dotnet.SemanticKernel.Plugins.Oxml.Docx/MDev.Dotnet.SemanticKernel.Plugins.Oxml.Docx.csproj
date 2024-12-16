@@ -1,12 +1,30 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+	  <TargetFramework>net9.0</TargetFramework>
+	  <ImplicitUsings>enable</ImplicitUsings>
+	  <Nullable>enable</Nullable>
+	  <Authors>MACK Mathieu</Authors>
+	  <Company>MACK Mathieu</Company>
+	  <Description>Plugin for semantic kernel that let you (or the LLM) to create docx documents</Description>
+	  <PackageTags>ioc</PackageTags>
+	  <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+	  <ProjectGuid>{989A5572-8A5D-48F9-878E-3249D46DFF64}</ProjectGuid>
+	  <PackageReadmeFile>README.md</PackageReadmeFile>
+	  <LangVersion>preview</LangVersion>
+	  <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+	  <Copyright>Copyright (c) MACK Mathieu</Copyright>
+	  <PackageProjectUrl>https://github.com/mathieumack/MDev.Dotnet.SemanticKernel</PackageProjectUrl>
+	  <RepositoryUrl>https://github.com/mathieumack/MDev.Dotnet.SemanticKernel</RepositoryUrl>
+	  <RepositoryType>git</RepositoryType>
+	  <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
-  <ItemGroup>
+	<ItemGroup>
+		<None Include="..\..\README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
+	<ItemGroup>
     <PackageReference Include="MarkdownToDocxGenerator" Version="1.1.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
     <PackageReference Include="Microsoft.SemanticKernel.Core" Version="1.32.0" />
